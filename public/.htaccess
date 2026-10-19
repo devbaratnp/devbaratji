@@ -27,3 +27,7 @@
   AddType text/plain .txt
   AddType application/xml .xml
 </IfModule>
+
+<FilesMatch "\.(zip|tar|gz|tgz)$">
+  Require all denied
+</FilesMatch>
