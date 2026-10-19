@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { absoluteUrl, buildStructuredData, getSeoPage } from "./seo";
 import "./styles.css";
 
-const heroArtwork = "/assets/generated/devbarat-hero-editorial-v3.png";
-const aboutPortrait = "/assets/generated/devbarat-about-cutout-v2.png";
+const heroArtwork = "/assets/optimized/devbarat-hero-editorial-v3.webp";
+const aboutPortrait = "/assets/optimized/devbarat-about-cutout-v2.webp";
 
 const navItems = [
   ["home", "Home"],
@@ -19,7 +20,9 @@ const projects = [
     title: "Little Puma",
     label: "CRM & retail operations",
     description: "A multi-channel sales and CRM platform with automated WhatsApp notifications and instant stock sync for a busy retail workflow.",
-    image: "/assets/projects/little-puma.png",
+    image: "/assets/projects/little-puma.webp",
+    width: 1420,
+    height: 835,
     tone: "cobalt",
   },
   {
@@ -27,7 +30,9 @@ const projects = [
     title: "Santosh Guru",
     label: "Booking & client portal",
     description: "A self-service consultation portal with timezone-aware booking, automated payments, and a client profile archive in one clear flow.",
-    image: "/assets/projects/santosh-guru.png",
+    image: "/assets/projects/santosh-guru.webp",
+    width: 1055,
+    height: 835,
     tone: "orange",
   },
   {
@@ -35,7 +40,9 @@ const projects = [
     title: "Nishana Suppliers",
     label: "B2B eCommerce & inventory",
     description: "A hybrid B2B and B2C commerce system with live inventory reservation, credit lines, and invoice generation for supplier operations.",
-    image: "/assets/projects/nishana-suppliers.png",
+    image: "/assets/projects/nishana-suppliers.webp",
+    width: 1440,
+    height: 900,
     tone: "yellow",
   },
   {
@@ -43,7 +50,9 @@ const projects = [
     title: "Klipify AI",
     label: "AI & media workflow",
     description: "A focused SaaS product that takes uploaded video through captioning, review, and publishing in one simple workspace.",
-    image: "/assets/projects/klipify-ai.png",
+    image: "/assets/projects/klipify-ai.webp",
+    width: 1335,
+    height: 835,
     tone: "cobalt",
   },
 ];
@@ -80,6 +89,59 @@ function getCurrentPage() {
   const path = window.location.pathname.replace(/\/+$/, "");
   const segment = path.split("/").pop()?.replace(/\.html$/, "");
   return navItems.some(([id]) => id === segment) ? segment : "home";
+}
+
+function upsertMeta(attribute, key, content) {
+  let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, key);
+    document.head.appendChild(element);
+  }
+  element.setAttribute("content", content);
+}
+
+function upsertCanonical(href) {
+  let element = document.head.querySelector('link[rel="canonical"]');
+  if (!element) {
+    element = document.createElement("link");
+    element.setAttribute("rel", "canonical");
+    document.head.appendChild(element);
+  }
+  element.setAttribute("href", href);
+}
+
+function Seo({ activePage }) {
+  useEffect(() => {
+    const metadata = getSeoPage(activePage);
+    const pageUrl = absoluteUrl(metadata.path);
+
+    document.title = metadata.title;
+    document.documentElement.lang = "en";
+    upsertMeta("name", "description", metadata.description);
+    upsertMeta("name", "robots", "index,follow");
+    upsertMeta("property", "og:title", metadata.title);
+    upsertMeta("property", "og:description", metadata.description);
+    upsertMeta("property", "og:type", "website");
+    upsertMeta("property", "og:url", pageUrl);
+    upsertMeta("property", "og:image", absoluteUrl(metadata.image));
+    upsertMeta("name", "twitter:card", "summary_large_image");
+    upsertMeta("name", "twitter:title", metadata.title);
+    upsertMeta("name", "twitter:description", metadata.description);
+    upsertMeta("name", "twitter:image", absoluteUrl(metadata.image));
+    upsertCanonical(pageUrl);
+
+    let structuredData = document.getElementById("structured-data");
+    if (!structuredData) {
+      structuredData = document.createElement("script");
+      structuredData.type = "application/ld+json";
+      structuredData.id = "structured-data";
+      document.head.appendChild(structuredData);
+    }
+    structuredData.textContent = JSON.stringify(buildStructuredData(activePage));
+  }, [activePage]);
+
+  return null;
 }
 
 function Arrow({ direction = "right" }) {
@@ -134,8 +196,8 @@ function Home() {
 
   return (
     <section className="home-section" aria-labelledby="home-title">
-      <div className="hero-visual" aria-hidden="true">
-        <img src={heroArtwork} alt="" fetchPriority="high" />
+      <div className="hero-visual">
+        <img src={heroArtwork} alt="Devbarat Prasad Patel, software builder and educator from Nepal" width="1672" height="941" fetchPriority="high" />
         <div className="hero-shade" />
       </div>
 
@@ -189,7 +251,7 @@ function Home() {
           {featuredProjects.map((project, index) => (
             <article className={`home-project home-project-${project.tone} reveal`} key={project.title}>
               <a className="home-project-image" href={`${pageHref("projects")}#${project.slug}`} aria-label={`View ${project.title} project`}>
-                <img src={project.image} alt={`${project.title} project screenshot`} loading="lazy" />
+                <img src={project.image} alt={`${project.title} project screenshot`} width={project.width} height={project.height} loading="lazy" />
                 <span>0{index + 1} <Arrow /></span>
               </a>
               <div className="home-project-copy">
@@ -243,7 +305,7 @@ function About() {
 
         <div className="about-layout">
           <div className="about-copy reveal">
-            <h2 id="about-title">Make the complicated part <em>easier to use.</em></h2>
+            <h1 id="about-title">Make the complicated part <em>easier to use.</em></h1>
             <p className="body-copy">I work across product, frontend, AI, and operations. My focus is simple: understand the real problem, then build the smallest reliable system around it.</p>
             <div className="about-tags">
               <span>Product thinking</span><span>Interface craft</span><span>Practical automation</span>
@@ -253,7 +315,7 @@ function About() {
           <figure className="about-portrait reveal">
             <div className="portrait-accent portrait-accent-blue" />
             <div className="portrait-accent portrait-accent-orange" />
-            <img src={aboutPortrait} alt="Devbarat Prasad Patel in a black t-shirt" loading="lazy" />
+            <img src={aboutPortrait} alt="Devbarat Prasad Patel in a black t-shirt" width="1254" height="1254" loading="lazy" />
             <figcaption>Building from Birgunj, Nepal</figcaption>
           </figure>
         </div>
@@ -332,7 +394,7 @@ function Projects() {
           {projects.map((project, index) => (
             <article className={`project-card project-card-${project.tone} reveal`} id={project.slug} key={project.title}>
               <div className="project-image">
-                <img src={project.image} alt={`${project.title} project screenshot`} loading="lazy" />
+                <img src={project.image} alt={`${project.title} project screenshot`} width={project.width} height={project.height} loading="lazy" />
                 <span className="project-index">0{index + 1}</span>
                 <span className="project-open"><Arrow /></span>
               </div>
@@ -355,6 +417,14 @@ function ContactForm() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const message = String(formData.get("message") || "").trim();
+    const subject = encodeURIComponent(`Project enquiry from ${name}`);
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
     setSubmitted(true);
     event.currentTarget.reset();
   };
@@ -362,23 +432,24 @@ function ContactForm() {
   return (
     <form className="contact-form reveal" onSubmit={handleSubmit}>
       <div className="form-row">
-        <label>
+        <label htmlFor="contact-name">
           <span>Your name</span>
-          <input type="text" name="name" placeholder="Name" autoComplete="name" required />
+          <input id="contact-name" type="text" name="name" placeholder="Name" autoComplete="name" required />
         </label>
-        <label>
+        <label htmlFor="contact-email">
           <span>Email address</span>
-          <input type="email" name="email" placeholder="you@example.com" autoComplete="email" required />
+          <input id="contact-email" type="email" name="email" placeholder="you@example.com" autoComplete="email" required />
         </label>
       </div>
-      <label>
+      <label htmlFor="contact-message">
         <span>What are you building?</span>
-        <textarea name="message" rows="6" placeholder="Tell me a little about the idea, project, or problem." required />
+        <textarea id="contact-message" name="message" rows="6" placeholder="Tell me a little about the idea, project, or problem." required />
       </label>
       <div className="form-footer">
         <button className="button button-dark" type="submit">Send message <Arrow /></button>
-        {submitted && <p className="form-status" role="status">Thanks. This preview form is ready to connect to your email service.</p>}
+        {submitted && <p className="form-status" role="status">Your email app is opening with the message ready. Add the recipient before sending.</p>}
       </div>
+      <p className="form-privacy">Nothing is stored on this site. Your email app handles the message.</p>
     </form>
   );
 }
@@ -438,6 +509,7 @@ function App() {
 
   return (
     <div className={`app app-${activePage}`}>
+      <Seo activePage={activePage} />
       <Header activePage={activePage} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <main id="main">{page}</main>
     </div>

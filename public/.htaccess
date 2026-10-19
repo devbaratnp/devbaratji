@@ -1,6 +1,29 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://devbarat.com.np%{REQUEST_URI} [R=301,L,NE]
+
+  RewriteRule ^about/?$ about.html [L]
+  RewriteRule ^education/?$ education.html [L]
+  RewriteRule ^projects/?$ projects.html [L]
+  RewriteRule ^contact/?$ contact.html [L]
+
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self'; connect-src 'self'; form-action 'self' mailto:"
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType text/plain .txt
+  AddType application/xml .xml
 </IfModule>

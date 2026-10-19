@@ -330,7 +330,7 @@ h2 em { color: var(--blue); font-style: normal; }
 .principle-card h3 { margin: 0; font-family: var(--display); font-size: 1.3rem; }
 .principle-card p { max-width: 27rem; margin: 0.7rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
 
-.education-section { color: var(--paper); background-color: var(--dark); background-image: linear-gradient(105deg, rgba(10, 17, 25, 0.96), rgba(10, 17, 25, 0.86)), url("/assets/generated/devbarat-blueprint-texture.png"); background-size: cover; background-position: center; }
+.education-section { color: var(--paper); background-color: var(--dark); background-image: linear-gradient(105deg, rgba(10, 17, 25, 0.96), rgba(10, 17, 25, 0.86)), url("/assets/optimized/devbarat-blueprint-texture.webp"); background-size: cover; background-position: center; }
 .education-grid { display: grid; grid-template-columns: 0.82fr 1.18fr; gap: clamp(3rem, 10vw, 10rem); }
 .education-intro .section-heading { margin-bottom: 5rem; }
 .education-intro h1, .education-intro h2 { max-width: 650px; }
@@ -399,6 +399,7 @@ h2 em { color: var(--blue); font-style: normal; }
 .form-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.25rem; }
 .form-footer .button { border: 0; cursor: pointer; }
 .form-status { max-width: 19rem; margin: 0; color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
+.form-privacy { margin: 1.1rem 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.62rem; line-height: 1.5; }
 .contact-sidebar { padding-top: 0.6rem; }
 .contact-sidebar .section-kicker { color: #ffbf8d; }
 .contact-sidebar-copy { max-width: 19rem; margin: 1.1rem 0 2rem; color: #dce7ff; line-height: 1.6; }
