@@ -1,508 +1,445 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import * as THREE from "three";
-import Lenis from "lenis";
 import "./styles.css";
 
-const portrait = "/assets/generated/devbarat-hero-cutout-v2.png";
+const heroArtwork = "/assets/generated/devbarat-hero-editorial-v3.png";
 const aboutPortrait = "/assets/generated/devbarat-about-cutout-v2.png";
 
 const navItems = [
   ["home", "Home"],
   ["about", "About"],
-  ["projects", "Project"],
-  ["skills", "Skill"],
-  ["contact", "Contact me"],
-  ["work-with-me", "Work with me"],
+  ["education", "Education"],
+  ["projects", "Projects"],
+  ["contact", "Contact"],
 ];
 
 const projects = [
   {
-    number: "01",
-    title: "KlipifyAI",
-    category: "AI product / workflow",
-    description: "A practical AI product shaped around clearer content workflows and useful output.",
-    image: "/assets/people/devbarat-caption-thumbnail.jpg",
-    href: "https://klipifyai.com/",
-    tags: ["Product direction", "AI workflows"],
+    slug: "little-puma",
+    title: "Little Puma",
+    label: "CRM & retail operations",
+    description: "A multi-channel sales and CRM platform with automated WhatsApp notifications and instant stock sync for a busy retail workflow.",
+    image: "/assets/projects/little-puma.png",
+    tone: "cobalt",
   },
   {
-    number: "02",
-    title: "iSoftro",
-    category: "Business systems / product",
-    description: "Software systems that turn messy business processes into tools people can actually use.",
-    image: "/assets/people/devbarat-building-thumbnail.jpg",
-    href: "https://isoftro.com/",
-    tags: ["Systems thinking", "Automation"],
+    slug: "santosh-guru",
+    title: "Santosh Guru",
+    label: "Booking & client portal",
+    description: "A self-service consultation portal with timezone-aware booking, automated payments, and a client profile archive in one clear flow.",
+    image: "/assets/projects/santosh-guru.png",
+    tone: "orange",
   },
   {
-    number: "03",
-    title: "Selected systems",
-    category: "Web / experiments",
-    description: "Interfaces, automations, and experiments assembled in public as the work keeps moving.",
-    image: "/assets/generated/devbarat-cyan-motion.png",
-    href: "https://github.com/devbaratnp",
-    tags: ["Frontend", "Open source"],
+    slug: "nishana-suppliers",
+    title: "Nishana Suppliers",
+    label: "B2B eCommerce & inventory",
+    description: "A hybrid B2B and B2C commerce system with live inventory reservation, credit lines, and invoice generation for supplier operations.",
+    image: "/assets/projects/nishana-suppliers.png",
+    tone: "yellow",
+  },
+  {
+    slug: "klipify-ai",
+    title: "Klipify AI",
+    label: "AI & media workflow",
+    description: "A focused SaaS product that takes uploaded video through captioning, review, and publishing in one simple workspace.",
+    image: "/assets/projects/klipify-ai.png",
+    tone: "cobalt",
   },
 ];
 
-const skills = ["Frontend", "AI workflows", "SaaS", "Automation", "Product design", "Business systems"];
+const learningSteps = [
+  {
+    number: "01",
+    title: "Start with a question",
+    description: "Good work usually starts with a small question: what is slow, confusing, or harder than it needs to be?",
+  },
+  {
+    number: "02",
+    title: "Learn by making",
+    description: "I learn fastest when the lesson has somewhere to go: a prototype, a tool, or a real person trying it out.",
+  },
+  {
+    number: "03",
+    title: "Share the useful part",
+    description: "Notes become tutorials, experiments become products, and the feedback makes the next build sharper.",
+  },
+];
 
-function useSectionObserver() {
-  const [activeSection, setActiveSection] = useState("home");
+const socialLinks = [
+  { label: "Facebook", href: "https://www.facebook.com/devbarat.p", icon: "ri-facebook-fill" },
+  { label: "Instagram", href: "https://www.instagram.com/patel.jee6317/", icon: "ri-instagram-line" },
+  { label: "GitHub", href: "https://github.com/devbaratnp", icon: "ri-github-line" },
+];
 
-  useEffect(() => {
-    const sections = [...document.querySelectorAll("[data-scene-section]")];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActiveSection(visible.target.id);
-      },
-      { threshold: [0.2, 0.45, 0.7], rootMargin: "-8% 0px -8%" },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
+function pageHref(page) {
+  return page === "home" ? "/" : `/${page}`;
+}
 
-  return activeSection;
+function getCurrentPage() {
+  const path = window.location.pathname.replace(/\/+$/, "");
+  const segment = path.split("/").pop()?.replace(/\.html$/, "");
+  return navItems.some(([id]) => id === segment) ? segment : "home";
+}
+
+function Arrow({ direction = "right" }) {
+  return <span className={`arrow arrow-${direction}`} aria-hidden="true">→</span>;
 }
 
 function useReveal() {
   useEffect(() => {
-    const items = [...document.querySelectorAll(".reveal")];
+    document.documentElement.classList.add("has-js");
+    const elements = [...document.querySelectorAll(".reveal")];
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-visible")),
-      { threshold: 0.1, rootMargin: "0px 0px -10%" },
+      { threshold: 0.12, rootMargin: "0px 0px -8%" },
     );
-    items.forEach((item) => observer.observe(item));
+
+    elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
   }, []);
 }
 
-function usePointerField() {
-  useEffect(() => {
-    const onMove = (event) => {
-      document.documentElement.style.setProperty("--pointer-x", `${event.clientX}px`);
-      document.documentElement.style.setProperty("--pointer-y", `${event.clientY}px`);
-      document.documentElement.style.setProperty("--pointer-xp", `${(event.clientX / window.innerWidth) * 100}%`);
-      document.documentElement.style.setProperty("--pointer-yp", `${(event.clientY / window.innerHeight) * 100}%`);
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
-  }, []);
-}
-
-function CinematicCanvas({ activeSection }) {
-  const canvasRef = useRef(null);
-  const activeSectionRef = useRef(activeSection);
-
-  useEffect(() => {
-    activeSectionRef.current = activeSection;
-  }, [activeSection]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let renderer;
-    try {
-      const context = canvas.getContext("webgl2", { alpha: true, antialias: true, powerPreference: "high-performance" })
-        || canvas.getContext("webgl", { alpha: true, antialias: true, powerPreference: "high-performance" });
-      if (!context) {
-        canvas.classList.add("is-unavailable");
-        return undefined;
-      }
-      renderer = new THREE.WebGLRenderer({ canvas, context, alpha: true, antialias: true, powerPreference: "high-performance" });
-    } catch (error) {
-      canvas.classList.add("is-unavailable");
-      return undefined;
-    }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.8));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-    camera.position.set(0, 0, 8.5);
-
-    const root = new THREE.Group();
-    scene.add(root);
-
-    const textureLoader = new THREE.TextureLoader();
-    const atmosphereTexture = textureLoader.load("/assets/generated/devbarat-hero-atmosphere.png");
-    atmosphereTexture.colorSpace = THREE.SRGBColorSpace;
-    const portraitTexture = textureLoader.load(portrait);
-    portraitTexture.colorSpace = THREE.SRGBColorSpace;
-
-    const backdrop = new THREE.Mesh(
-      new THREE.PlaneGeometry(15, 15),
-      new THREE.MeshBasicMaterial({ map: atmosphereTexture, transparent: true, opacity: 0.36, depthWrite: false }),
-    );
-    backdrop.position.set(0.3, 0.2, -3.5);
-    root.add(backdrop);
-
-    const portraitMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(4.95, 5.25),
-      new THREE.MeshBasicMaterial({ map: portraitTexture, transparent: true, opacity: 0.96, depthWrite: false, side: THREE.DoubleSide }),
-    );
-    portraitMesh.position.set(0.95, -0.2, 0.65);
-    root.add(portraitMesh);
-
-    const halo = new THREE.Mesh(
-      new THREE.RingGeometry(2.15, 2.19, 96),
-      new THREE.MeshBasicMaterial({ color: 0x77e4ff, transparent: true, opacity: 0.58, depthWrite: false, side: THREE.DoubleSide }),
-    );
-    halo.position.set(0.82, -0.28, 0.1);
-    halo.scale.set(1, 1.1, 1);
-    root.add(halo);
-
-    const innerHalo = new THREE.Mesh(
-      new THREE.RingGeometry(1.88, 1.885, 96),
-      new THREE.MeshBasicMaterial({ color: 0xf1a858, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide }),
-    );
-    innerHalo.position.set(0.82, -0.28, 0.13);
-    root.add(innerHalo);
-
-    const grid = new THREE.Mesh(
-      new THREE.PlaneGeometry(16, 11, 32, 22),
-      new THREE.MeshBasicMaterial({ color: 0x75dff4, wireframe: true, transparent: true, opacity: 0.11, depthWrite: false }),
-    );
-    grid.position.set(0, -1.7, -2.1);
-    grid.rotation.x = -0.1;
-    root.add(grid);
-
-    const beam = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.015, 10),
-      new THREE.MeshBasicMaterial({ color: 0x9ceeff, transparent: true, opacity: 0.28, depthWrite: false }),
-    );
-    beam.position.set(-2.1, 0, 0.15);
-    beam.rotation.z = -0.25;
-    root.add(beam);
-
-    const particleCount = 360;
-    const positions = new Float32Array(particleCount * 3);
-    const particleColors = new Float32Array(particleCount * 3);
-    const cyan = new THREE.Color(0x9aefff);
-    const amber = new THREE.Color(0xf0a95a);
-    for (let i = 0; i < particleCount; i += 1) {
-      const radius = 2.2 + Math.random() * 5.4;
-      const angle = Math.random() * Math.PI * 2;
-      positions[i * 3] = Math.cos(angle) * radius + (Math.random() - 0.5) * 1.7;
-      positions[i * 3 + 1] = Math.sin(angle) * radius * 0.65 + (Math.random() - 0.5) * 1.8;
-      positions[i * 3 + 2] = -1.8 + Math.random() * 2.1;
-      const color = i % 5 === 0 ? amber : cyan;
-      particleColors[i * 3] = color.r;
-      particleColors[i * 3 + 1] = color.g;
-      particleColors[i * 3 + 2] = color.b;
-    }
-    const particleGeometry = new THREE.BufferGeometry();
-    particleGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    particleGeometry.setAttribute("color", new THREE.BufferAttribute(particleColors, 3));
-    const particles = new THREE.Points(
-      particleGeometry,
-      new THREE.PointsMaterial({ size: 0.026, vertexColors: true, transparent: true, opacity: 0.74, depthWrite: false, sizeAttenuation: true }),
-    );
-    root.add(particles);
-
-    const mouse = new THREE.Vector2(0, 0);
-    const targetMouse = new THREE.Vector2(0, 0);
-    const onPointerMove = (event) => {
-      targetMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      targetMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    };
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-
-    const lenis = new Lenis({ autoRaf: false, lerp: 0.085, smoothWheel: true, syncTouch: false });
-    let frameId = 0;
-    let elapsed = 0;
-    let lastTime = performance.now();
-    const resize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      const mobile = width < 700;
-      portraitMesh.position.x = mobile ? 0.45 : 0.95;
-      portraitMesh.scale.setScalar(mobile ? 0.83 : 1);
-      halo.position.x = mobile ? 0.36 : 0.82;
-      innerHalo.position.x = mobile ? 0.36 : 0.82;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const sceneColor = new THREE.Color(0x77e4ff);
-    const tick = (time) => {
-      frameId = window.requestAnimationFrame(tick);
-      const now = performance.now();
-      const delta = Math.min((now - lastTime) / 1000, 0.05);
-      lastTime = now;
-      elapsed += delta;
-      lenis.raf(time);
-      mouse.lerp(targetMouse, reducedMotion ? 1 : 0.045);
-      const scrollRange = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      const scroll = window.scrollY / scrollRange;
-      const currentSection = activeSectionRef.current;
-      const homeIntensity = currentSection === "home" ? 1 : currentSection === "about" ? 0.72 : currentSection === "projects" ? 0.26 : currentSection === "skills" ? 0.18 : 0.34;
-      const targetColor = currentSection === "contact" || currentSection === "work-with-me" ? 0xf0a95a : 0x77e4ff;
-      sceneColor.lerp(new THREE.Color(targetColor), 0.025);
-
-      root.rotation.y += (mouse.x * 0.075 - root.rotation.y) * 0.035;
-      root.rotation.x += (-mouse.y * 0.035 - root.rotation.x) * 0.035;
-      root.position.x += (mouse.x * 0.22 - root.position.x) * 0.03;
-      root.position.y += (mouse.y * 0.14 - root.position.y) * 0.03;
-      camera.position.x += (mouse.x * 0.22 - camera.position.x) * 0.025;
-      camera.position.y += (-mouse.y * 0.14 - camera.position.y) * 0.025;
-      camera.position.z += ((8.5 - scroll * 0.9) - camera.position.z) * 0.022;
-
-      portraitMesh.material.opacity += (0.96 * homeIntensity - portraitMesh.material.opacity) * 0.035;
-      backdrop.material.opacity += (0.36 * (0.55 + homeIntensity * 0.55) - backdrop.material.opacity) * 0.035;
-      halo.material.opacity += ((0.18 + homeIntensity * 0.42) - halo.material.opacity) * 0.035;
-      halo.rotation.z = elapsed * 0.035 + scroll * 0.8;
-      innerHalo.rotation.z = -elapsed * 0.07 - scroll * 0.6;
-      grid.rotation.z = Math.sin(elapsed * 0.12) * 0.02;
-      grid.position.y = -1.7 - scroll * 0.6;
-      beam.position.x = -2.1 + Math.sin(elapsed * 0.28) * 0.7 + mouse.x * 0.3;
-      particles.rotation.z = elapsed * 0.012 + scroll * 0.28;
-      particles.material.opacity = 0.28 + homeIntensity * 0.48;
-      halo.material.color.lerp(sceneColor, 0.05);
-      innerHalo.material.color.lerp(new THREE.Color(targetColor), 0.04);
-      grid.material.color.lerp(sceneColor, 0.04);
-
-      renderer.render(scene, camera);
-    };
-    frameId = window.requestAnimationFrame(tick);
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("resize", resize);
-      lenis.destroy();
-      particleGeometry.dispose();
-      renderer.dispose();
-      [backdrop, portraitMesh, halo, innerHalo, grid, beam].forEach((mesh) => {
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-      });
-      atmosphereTexture.dispose();
-      portraitTexture.dispose();
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="global-canvas" aria-hidden="true" />;
-}
-
-function Header({ activeSection, menuOpen, setMenuOpen }) {
+function Header({ activePage, menuOpen, setMenuOpen }) {
   return (
     <header className="site-header">
-      <a className="wordmark" href="#home" aria-label="Devbarat Prasad Patel home">
-        <span>DP</span>
-        <small>devbarat / systems</small>
+      <a className="wordmark" href={pageHref("home")} aria-label="Devbarat home" onClick={() => setMenuOpen(false)}>
+        DEVBARAT
       </a>
+
       <nav className={menuOpen ? "main-nav is-open" : "main-nav"} aria-label="Primary navigation">
-        {navItems.map(([id, label], index) => (
-          <a key={id} className={activeSection === id ? "is-active" : ""} href={`#${id}`} onClick={() => setMenuOpen(false)}>
-            <span>0{index + 1}</span>{label}
+        {navItems.map(([id, label]) => (
+          <a
+            key={id}
+            className={activePage === id ? "is-active" : ""}
+            href={pageHref(id)}
+            aria-current={activePage === id ? "page" : undefined}
+            onClick={() => setMenuOpen(false)}
+          >
+            {label}
           </a>
         ))}
       </nav>
+
       <button className="menu-toggle" type="button" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
-        <span>{menuOpen ? "Close" : "Index"}</span><i aria-hidden="true" />
+        <span>{menuOpen ? "Close" : "Menu"}</span>
+        <i aria-hidden="true"><span /><span /></i>
       </button>
     </header>
   );
 }
 
-function Hero() {
+function Home() {
+  const featuredProjects = projects.slice(0, 2);
+
   return (
-    <section id="home" className="chapter hero-chapter" data-scene-section>
-      <div className="hero-orbit orbit-one" aria-hidden="true" />
-      <div className="hero-orbit orbit-two" aria-hidden="true" />
-      <div className="chapter-inner hero-inner">
-        <div className="hero-meta reveal">
-          <span className="eyebrow">01 / home</span>
-          <span className="coordinates">27° 00′ N<br />84° 52′ E / Nepal</span>
-        </div>
+    <section className="home-section" aria-labelledby="home-title">
+      <div className="hero-visual" aria-hidden="true">
+        <img src={heroArtwork} alt="" fetchPriority="high" />
+        <div className="hero-shade" />
+      </div>
+
+      <div className="page-shell home-shell">
         <div className="hero-copy reveal">
-          <p className="eyebrow">Devbarat Prasad Patel</p>
-          <h1>Build<br /><em>useful</em><br />things.</h1>
-          <p className="hero-deck">Product builder, software maker, and systems thinker. I turn rough ideas into tools people can keep using.</p>
-          <a className="signal-link" href="#work-with-me"><span>Work with me</span><b>↗</b></a>
+          <p className="eyebrow">Software builder · educator · creator</p>
+          <h1 id="home-title">Build useful <span>things.</span></h1>
+          <p className="hero-lede">I build practical software for people who need the next step to feel obvious.</p>
+          <div className="hero-actions">
+            <a className="button button-primary" href={pageHref("projects")}>View projects <Arrow /></a>
+            <a className="button button-outline" href={pageHref("about")}>How I work <Arrow /></a>
+          </div>
+          <div className="hero-footnote">
+            <span className="status-dot" />
+            <span>Based in Birgunj, Nepal</span>
+            <span className="hero-rule" />
+            <span>Working worldwide</span>
+          </div>
         </div>
-        <div className="hero-figure-note reveal">
-          <span>Interactive portrait / plate 01</span>
-          <span>Move your cursor</span>
+
+        <div className="hero-scroll reveal"><span>Scroll to see the work</span><i /></div>
+      </div>
+
+      <div className="home-proof-band">
+        <div className="home-proof page-shell">
+          <article className="home-proof-item reveal">
+            <span className="home-proof-number">01</span>
+            <div><h3>Product thinking</h3><p>Find the real problem before adding another feature.</p></div>
+          </article>
+          <article className="home-proof-item reveal">
+            <span className="home-proof-number">02</span>
+            <div><h3>Interface craft</h3><p>Make the useful path clear, calm, and easy to pick up.</p></div>
+          </article>
+          <article className="home-proof-item reveal">
+            <span className="home-proof-number">03</span>
+            <div><h3>Practical automation</h3><p>Remove repetitive work without adding a new layer of mystery.</p></div>
+          </article>
         </div>
-        <div className="hero-scroll"><span>Scroll to enter</span><i /></div>
+      </div>
+
+      <div className="home-featured page-shell">
+        <div className="home-section-head reveal">
+          <div>
+            <p className="section-kicker">Selected work</p>
+            <h2>Useful work, <em>out in the world.</em></h2>
+          </div>
+          <a className="inline-link" href={pageHref("projects")}>See all projects <Arrow /></a>
+        </div>
+
+        <div className="home-project-grid">
+          {featuredProjects.map((project, index) => (
+            <article className={`home-project home-project-${project.tone} reveal`} key={project.title}>
+              <a className="home-project-image" href={`${pageHref("projects")}#${project.slug}`} aria-label={`View ${project.title} project`}>
+                <img src={project.image} alt={`${project.title} project screenshot`} loading="lazy" />
+                <span>0{index + 1} <Arrow /></span>
+              </a>
+              <div className="home-project-copy">
+                <p className="project-label">{project.label}</p>
+                <h3>{project.title}</h3>
+                <p>{project.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="home-practice-band">
+        <div className="home-practice page-shell">
+          <div className="home-practice-label reveal">04 / Approach</div>
+          <div className="home-practice-copy reveal">
+            <h2>Make the complicated part <em>easier to use.</em></h2>
+            <p>I work across product, frontend, AI, and operations. The goal is simple: understand the real problem, then build the smallest reliable system around it.</p>
+            <a className="inline-link inline-link-light" href={pageHref("about")}>Read the full story <Arrow /></a>
+          </div>
+        </div>
+      </div>
+
+      <div className="home-cta page-shell reveal">
+        <p className="section-kicker">05 / Next step</p>
+        <div className="home-cta-content">
+          <h2>Have an idea worth <em>building?</em></h2>
+          <p className="body-copy">Start with the problem, even if the idea is still rough. A useful first conversation is enough.</p>
+          <a className="button button-dark" href={pageHref("contact")}>Let&apos;s talk <Arrow /></a>
+        </div>
       </div>
     </section>
+  );
+}
+
+function PageHeading({ number, label, aside, light = false }) {
+  return (
+    <div className={`section-heading ${light ? "section-heading-light" : ""} reveal`}>
+      <p className="section-kicker">{number} / {label}</p>
+      <span className="section-line" />
+      <p className="section-aside">{aside}</p>
+    </div>
   );
 }
 
 function About() {
   return (
-    <section id="about" className="chapter about-chapter" data-scene-section>
-      <div className="chapter-inner about-inner">
-        <div className="section-index reveal"><span>02</span><span>about</span></div>
-        <div className="about-copy reveal">
-          <p className="eyebrow">A builder from Birgunj</p>
-          <h2>Small teams.<br /><em>Clear systems.</em><br />Real momentum.</h2>
-          <p className="body-copy">I work across product, frontend, AI, and operations. The common thread is simple: make the complicated part easier to see, then build the smallest useful system around it.</p>
-          <div className="about-specs">
-            <span><b>01</b> Product thinking</span>
-            <span><b>02</b> Interface craft</span>
-            <span><b>03</b> Practical automation</span>
+    <section className="section-block about-section page-view" aria-labelledby="about-title">
+      <div className="page-shell">
+        <PageHeading number="01" label="About" aside="A practical way to build" />
+
+        <div className="about-layout">
+          <div className="about-copy reveal">
+            <h2 id="about-title">Make the complicated part <em>easier to use.</em></h2>
+            <p className="body-copy">I work across product, frontend, AI, and operations. My focus is simple: understand the real problem, then build the smallest reliable system around it.</p>
+            <div className="about-tags">
+              <span>Product thinking</span><span>Interface craft</span><span>Practical automation</span>
+            </div>
+          </div>
+
+          <figure className="about-portrait reveal">
+            <div className="portrait-accent portrait-accent-blue" />
+            <div className="portrait-accent portrait-accent-orange" />
+            <img src={aboutPortrait} alt="Devbarat Prasad Patel in a black t-shirt" loading="lazy" />
+            <figcaption>Building from Birgunj, Nepal</figcaption>
+          </figure>
+        </div>
+
+        <div className="about-story">
+          <div className="about-story-intro reveal">
+            <p className="section-kicker">About me</p>
+            <h2>A builder who likes the first rough version.</h2>
+          </div>
+          <div className="about-story-copy reveal">
+            <p>I&apos;m Devbarat Prasad Patel, a software builder, educator, and creator based in Birgunj, Nepal. I spend most of my time turning ideas into working software. That can mean designing a clear interface, connecting an API, building an AI workflow, improving a business process, or figuring out why a product feels harder to use than it should.</p>
+            <p>My work sits between technology and people. I care about how something works behind the screen, but I also care about how it feels when someone uses it for the first time. A good product should make the next step obvious. It should remove confusion, save time, and give people enough confidence to keep going.</p>
+            <p>I work across frontend development, product design, AI tools, business systems, and automation. I enjoy the early stage of a project, when the idea is still rough and the right questions have not been answered yet. That is usually where the most useful work begins.</p>
+            <p>Some of my work includes KlipifyAI, a tool for creating captions and subtitles for multilingual video content, and iSoftro, where I work on websites, e-commerce systems, ERP, CRM, and business automations. I also build smaller experiments, test new tools, and share what I learn through my projects and content.</p>
+            <p>Education is part of how I work. I learn by building, then try to explain the useful parts in a simple way. When I understand something better, I write about it, teach it, or turn it into a small working example. Teaching helps me slow down, question my assumptions, and make difficult ideas easier to understand.</p>
+            <p>Being based in Birgunj has shaped the way I think about technology. I have seen how much work still happens through manual steps, scattered information, and tools that were never designed around the people using them. That keeps me interested in building software that feels clear, affordable, and useful in everyday work.</p>
+            <p>I do not want to build software only to add another product to the internet. I want to make things that solve a real problem, help someone move faster, or make a complicated task feel manageable.</p>
+            <p>I am still learning, still experimenting, and still building. Each project teaches me something about technology, communication, and the kind of work I want to do next.</p>
           </div>
         </div>
-        <div className="about-portrait reveal">
-          <div className="portrait-grid" aria-hidden="true" />
-          <img src={aboutPortrait} alt="Devbarat Prasad Patel in a black t-shirt" />
-          <span className="portrait-caption">Identity plate / 02</span>
+
+        <div className="principles-grid">
+          {[
+            ["01", "Understand first", "The right question usually saves more time than a clever solution."],
+            ["02", "Make it clear", "Good software should feel calm, direct, and easy to pick up."],
+            ["03", "Keep it moving", "Ship a useful version, learn from it, then make the next version better."],
+          ].map(([number, title, text]) => (
+            <article className="principle-card reveal" key={number}>
+              <span>{number}</span><h3>{title}</h3><p>{text}</p>
+            </article>
+          ))}
         </div>
-        <div className="contour-copy" aria-hidden="true">01 — 02 — 03 — 04 — 05</div>
       </div>
     </section>
   );
 }
 
-function ProjectCard({ project, index, active, setActive }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const onMove = (event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
-    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
-    setTilt({ x: y * -5, y: x * 7 });
-    setActive(index);
-  };
+function Education() {
   return (
-    <article
-      className={`project-card project-card-${index + 1} ${active === index ? "is-active" : ""}`}
-      onPointerMove={onMove}
-      onPointerLeave={() => setTilt({ x: 0, y: 0 })}
-      style={{ "--rx": `${tilt.x}deg`, "--ry": `${tilt.y}deg` }}
-    >
-      <a href={project.href} target="_blank" rel="noreferrer" className="project-card-link" aria-label={`Open ${project.title}`}>
-        <div className="project-card-head"><span>{project.number}</span><span>{project.category}</span></div>
-        <div className="project-card-art">
-          <img src={project.image} alt="" loading="lazy" />
-          <span className="art-scan" />
-          <span className="art-corner">LIVE / BUILD</span>
+    <section className="section-block education-section page-view" aria-labelledby="education-title">
+      <div className="education-grid page-shell">
+        <div className="education-intro">
+          <PageHeading number="02" label="Education" aside="Learning in public" light />
+          <div className="reveal">
+            <h1 id="education-title">Keep learning. <em>Keep building.</em></h1>
+            <p className="body-copy">A living record of the questions, tools, and lessons that shape the work.</p>
+          </div>
+          <div className="education-note reveal"><span>Field note / 2026</span><p>“The best lessons are the ones that make the next build feel possible.”</p></div>
         </div>
-        <div className="project-card-copy">
-          <h3>{project.title}</h3>
-          <p>{project.description}</p>
-          <div className="project-tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+
+        <div className="learning-list">
+          {learningSteps.map((step) => (
+            <article className="learning-step reveal" key={step.number}>
+              <span className="step-number">{step.number}</span>
+              <div><h2>{step.title}</h2><p>{step.description}</p></div>
+              <Arrow />
+            </article>
+          ))}
         </div>
-        <span className="card-arrow">↗</span>
-      </a>
-    </article>
+      </div>
+    </section>
   );
 }
 
 function Projects() {
-  const [active, setActive] = useState(0);
   return (
-    <section id="projects" className="chapter projects-chapter" data-scene-section>
-      <div className="chapter-inner projects-inner">
+    <section className="section-block projects-section page-view" aria-labelledby="projects-title">
+      <div className="page-shell">
+        <PageHeading number="03" label="Projects" aside="Selected work from the agency portfolio" />
         <div className="projects-intro reveal">
-          <div className="section-index"><span>03</span><span>project</span></div>
-          <p className="eyebrow">Selected work / 2023—26</p>
-          <h2>Made to<br /><em>move.</em></h2>
-          <p className="body-copy">A few products and experiments where interface, business logic, and a little bit of nerve meet.</p>
-          <a className="text-link" href="https://github.com/devbaratnp" target="_blank" rel="noreferrer">See the public work <span>↗</span></a>
+          <h1 id="projects-title">Useful work, <em>out in the world.</em></h1>
+          <p className="body-copy">Four projects from the agency portfolio, covering commerce, bookings, supplier operations, and an AI media workflow.</p>
         </div>
-        <div className="project-stack reveal" onPointerLeave={() => setActive(0)}>
-          {projects.map((project, index) => <ProjectCard key={project.title} project={project} index={index} active={active} setActive={setActive} />)}
+
+        <div className="project-grid project-grid-four">
+          {projects.map((project, index) => (
+            <article className={`project-card project-card-${project.tone} reveal`} id={project.slug} key={project.title}>
+              <div className="project-image">
+                <img src={project.image} alt={`${project.title} project screenshot`} loading="lazy" />
+                <span className="project-index">0{index + 1}</span>
+                <span className="project-open"><Arrow /></span>
+              </div>
+              <div className="project-copy">
+                <p className="project-label">{project.label}</p>
+                <h2>{project.title}</h2>
+                <p>{project.description}</p>
+                <a className="inline-link" href={pageHref("contact")}>Discuss a similar project <Arrow /></a>
+              </div>
+            </article>
+          ))}
         </div>
-        <div className="projects-footnote"><span>Hover the plates</span><span>Each card opens the live work ↗</span></div>
       </div>
     </section>
   );
 }
 
-function Skills() {
+function ContactForm() {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setSubmitted(true);
+    event.currentTarget.reset();
+  };
+
   return (
-    <section id="skills" className="chapter skills-chapter" data-scene-section>
-      <div className="chapter-inner skills-inner">
-        <div className="section-index reveal"><span>04</span><span>skill</span></div>
-        <div className="skills-copy reveal">
-          <p className="eyebrow">The working stack</p>
-          <h2>Many tools.<br /><em>One point of view.</em></h2>
-          <p className="body-copy">I like the distance between an idea and the thing that ships to be short. That means knowing enough across the stack to keep decisions connected.</p>
-        </div>
-        <div className="skill-orbit reveal" aria-label="Devbarat skills">
-          <div className="orbit-rail rail-a" /><div className="orbit-rail rail-b" /><div className="orbit-rail rail-c" />
-          <div className="orbit-core"><span>craft</span><strong>systems</strong><small>DP / 04</small></div>
-          {skills.map((skill, index) => <span key={skill} className="skill-node" style={{ "--angle": `${index * 60 - 15}deg`, "--radius": `${160 + (index % 2) * 30}px` }}>{skill}</span>)}
-        </div>
-        <div className="skill-list reveal">{skills.map((skill, index) => <div key={skill}><span>0{index + 1}</span><b>{skill}</b><i>↗</i></div>)}</div>
+    <form className="contact-form reveal" onSubmit={handleSubmit}>
+      <div className="form-row">
+        <label>
+          <span>Your name</span>
+          <input type="text" name="name" placeholder="Name" autoComplete="name" required />
+        </label>
+        <label>
+          <span>Email address</span>
+          <input type="email" name="email" placeholder="you@example.com" autoComplete="email" required />
+        </label>
       </div>
-    </section>
+      <label>
+        <span>What are you building?</span>
+        <textarea name="message" rows="6" placeholder="Tell me a little about the idea, project, or problem." required />
+      </label>
+      <div className="form-footer">
+        <button className="button button-dark" type="submit">Send message <Arrow /></button>
+        {submitted && <p className="form-status" role="status">Thanks. This preview form is ready to connect to your email service.</p>}
+      </div>
+    </form>
   );
 }
 
 function Contact() {
   return (
-    <section id="contact" className="chapter contact-chapter" data-scene-section>
-      <div className="chapter-inner contact-inner">
-        <div className="section-index reveal"><span>05</span><span>contact me</span></div>
+    <section className="contact-section section-block page-view" aria-labelledby="contact-title">
+      <div className="contact-orbit contact-orbit-one" aria-hidden="true" />
+      <div className="contact-orbit contact-orbit-two" aria-hidden="true" />
+      <div className="page-shell contact-inner">
+        <PageHeading number="04" label="Contact" aside="Open to useful conversations" light />
         <div className="contact-copy reveal">
-          <p className="eyebrow">Open channel</p>
-          <h2>Have a sharp<br /><em>problem?</em></h2>
-          <p className="body-copy">Tell me what you’re trying to make, fix, or understand. The fastest way to reach me is through GitHub.</p>
-          <a className="contact-button" href="https://github.com/devbaratnp" target="_blank" rel="noreferrer"><span>Start a conversation</span><b>↗</b></a>
+          <h1 id="contact-title">Have an idea worth <em>building?</em></h1>
+          <p className="body-copy">Tell me what you&apos;re trying to make, fix, or understand. Start with the problem, even if the idea is still rough.</p>
         </div>
-        <div className="contact-stamp reveal"><span>Birgunj</span><strong>NEPAL</strong><small>27° 00′ N / 84° 52′ E</small></div>
-        <div className="contact-lines" aria-hidden="true"><span /><span /><span /><span /></div>
-      </div>
-    </section>
-  );
-}
 
-function WorkWithMe() {
-  return (
-    <section id="work-with-me" className="chapter work-chapter" data-scene-section>
-      <div className="chapter-inner work-inner">
-        <div className="work-topline reveal"><span>06 / work with me</span><span>Next signal / yours</span></div>
-        <div className="work-figure"><img src={portrait} alt="Devbarat Prasad Patel in a mustard knit polo" /></div>
-        <div className="work-copy reveal">
-          <p className="eyebrow">Let’s build the next useful thing</p>
-          <h2>Bring the<br /><em>rough idea.</em></h2>
-          <a className="signal-link" href="https://github.com/devbaratnp" target="_blank" rel="noreferrer"><span>Open GitHub</span><b>↗</b></a>
+        <div className="contact-layout">
+          <ContactForm />
+          <aside className="contact-sidebar reveal">
+            <p className="section-kicker">Find me online</p>
+            <p className="contact-sidebar-copy">I share projects, experiments, and everyday notes from the work across these spaces.</p>
+            <div className="social-list">
+              {socialLinks.map((link) => (
+                <a className="social-link" key={link.label} href={link.href} target="_blank" rel="noreferrer">
+                  <span className="social-icon"><i className={link.icon} aria-hidden="true" /></span>
+                  <span>{link.label}</span>
+                  <Arrow />
+                </a>
+              ))}
+            </div>
+            <a className="inline-link inline-link-light" href={pageHref("projects")}>Browse the projects <Arrow /></a>
+          </aside>
         </div>
-        <footer className="site-footer"><span>© {new Date().getFullYear()} Devbarat Prasad Patel</span><span>Software / AI / systems / Nepal</span><a href="#home">Back to top ↑</a></footer>
+
+        <footer className="site-footer">
+          <span>© {new Date().getFullYear()} Devbarat Prasad Patel</span>
+          <span>Software / AI / education / Nepal</span>
+          <a href={pageHref("home")}>Back to home <Arrow direction="up" /></a>
+        </footer>
       </div>
     </section>
   );
 }
 
 function App() {
-  const activeSection = useSectionObserver();
+  const activePage = getCurrentPage();
   const [menuOpen, setMenuOpen] = useState(false);
   useReveal();
-  usePointerField();
 
-  useEffect(() => {
-    document.body.dataset.scene = activeSection;
-  }, [activeSection]);
+  const page = {
+    home: <Home />,
+    about: <About />,
+    education: <Education />,
+    projects: <Projects />,
+    contact: <Contact />,
+  }[activePage] || <Home />;
 
   return (
-    <div className={`app scene-${activeSection}`}>
-      <CinematicCanvas activeSection={activeSection} />
-      <div className="cursor-glow" aria-hidden="true" />
-      <Header activeSection={activeSection} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      <main id="main">
-        <Hero />
-        <About />
-        <Projects />
-        <Skills />
-        <Contact />
-        <WorkWithMe />
-      </main>
+    <div className={`app app-${activePage}`}>
+      <Header activePage={activePage} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <main id="main">{page}</main>
     </div>
   );
 }
