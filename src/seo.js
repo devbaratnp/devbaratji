@@ -44,6 +44,13 @@ export const seoPages = {
     image: defaultImage,
     type: "ContactPage",
   },
+  privacy: {
+    path: "/privacy",
+    title: "Privacy Policy | Devbarat",
+    description: "Privacy policy for Devbarat's website. Information about data collection, cookies, and how your information is handled.",
+    image: defaultImage,
+    type: "WebPage",
+  },
 };
 
 export function getSeoPage(page = "home") {

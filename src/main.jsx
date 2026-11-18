@@ -12,6 +12,7 @@ const navItems = [
   ["education", "Education"],
   ["projects", "Projects"],
   ["contact", "Contact"],
+  ["privacy", "Privacy"],
 ];
 
 const projects = [
@@ -494,6 +495,25 @@ function Contact() {
   );
 }
 
+function Privacy() {
+  return (
+    <section className="section-block privacy-section page-view" aria-labelledby="privacy-title">
+      <div className="page-shell">
+        <PageHeading number="05" label="Privacy" aside="How your information is handled" light />
+        <div className="privacy-content reveal">
+          <h1 id="privacy-title">Privacy <em>Policy.</em></h1>
+          <p className="body-copy">Last updated: November 2026.</p>
+          <p className="body-copy">This website belongs to Devbarat Prasad Patel and does not collect, store, or sell personal data. The contact form opens your email client directly — nothing you type is saved on this site.</p>
+          <p className="body-copy"><strong>Information we collect:</strong> We do not collect personal information through this website. No accounts, registrations, or tracking forms are offered.</p>
+          <p className="body-copy"><strong>Cookies:</strong> This site does not set cookies for analytics or advertising. Your browser may store standard technical data such as IP address through your hosting provider, but this site does not access or process it.</p>
+          <p className="body-copy"><strong>Third-party links:</strong> Social links leave this site and are governed by those platforms&apos; own privacy policies.</p>
+          <p className="body-copy"><strong>Contact:</strong> Questions about this policy can be sent through the contact page.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function App() {
   const activePage = getCurrentPage();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -505,6 +525,7 @@ function App() {
     education: <Education />,
     projects: <Projects />,
     contact: <Contact />,
+    privacy: <Privacy />,
   }[activePage] || <Home />;
 
   return (
