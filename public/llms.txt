@@ -1,0 +1,17 @@
+# Devbarat
+
+Devbarat Prasad Patel is a software builder, educator, and creator from Birgunj, Nepal.
+
+## Pages
+
+- [Home](https://devbarat.com.np/): Practical software, product thinking, frontend work, AI workflows, and business automation.
+- [About](https://devbarat.com.np/about): Background, working style, and approach to building useful software.
+- [Education](https://devbarat.com.np/education): Notes about learning by building and sharing practical lessons.
+- [Projects](https://devbarat.com.np/projects): Work across commerce, booking systems, supplier operations, CRM, and AI media workflows.
+- [Contact](https://devbarat.com.np/contact): Start a conversation about a software or automation project.
+
+## Profiles
+
+- https://www.facebook.com/devbarat.p
+- https://www.instagram.com/patel.jee6317/
+- https://github.com/devbaratnp

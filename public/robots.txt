@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://devbarat.com.np/sitemap.xml
